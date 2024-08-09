@@ -10,7 +10,7 @@ import java.util.Set;
 @Entity
 @Table(name = "student")
 @Data
-
+@AllArgsConstructor
 public class Student {
     @Id
     @Column(name = "email", length =50)
@@ -27,7 +27,13 @@ public class Student {
             joinColumns = {@JoinColumn(name = "email")},
             inverseJoinColumns = {@JoinColumn(name = "courses_id")}
     ) private Set<Course> courses;
+
+    public Student(String email, String name, String password) {
+        this.email = email;
+        this.name = name;
+        this.password = password;
     }
+}
 
 
 

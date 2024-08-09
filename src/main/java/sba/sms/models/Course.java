@@ -11,22 +11,31 @@ import java.util.Set;
 @Table (name = "course")
 @Data
 public class Course {
+    @Getter
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "courses_id")
-    private int course_id;
+    @Column(name = "id")
+    private int id;
 
+    @Getter
     @Column(name = "course_name", nullable = false, length = 50)
-    private String courseName;
+    private String name;
 
+    @Getter
     @Column(name = "instructor_name", nullable = false, length = 50)
-    private String instructor_name;
+    private String instructor;
 
     @Column(name = "students")
     private Set<Student> students;
 
+
     @ManyToMany(mappedBy = "course")
     public Set<Student> getStudents() {
         return students;
+    }
+
+    public Course(String instructor, String name) {
+        this.instructor = instructor;
+        this.name = name;
     }
 }
