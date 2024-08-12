@@ -4,10 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
+
 @Entity
 @Table (name = "course")
 @Data
@@ -36,6 +34,12 @@ public class Course {
     public Course(String name, String instructor) {
         this.instructor = instructor;
         this.name = name;
+    }
+
+    public Course(String name, String instructor, HashSet<Student> students) {
+        this.name = name;
+        this.instructor = instructor;
+        this.students = students;
     }
 
     @Override
