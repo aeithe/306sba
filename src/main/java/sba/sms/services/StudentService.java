@@ -18,15 +18,14 @@ import java.util.List;
 
 
 public class StudentService implements StudentI{
-    SessionFactory factory = null;
-    Session session = null;
-    Transaction transaction = null;
+    SessionFactory factory =  new Configuration().configure().buildSessionFactory();;
+
 
     @Override
     public List<Student> getAllStudents(){
+        Session session = factory.openSession();
+        Transaction transaction =null;
         try {
-            factory = new Configuration().configure().buildSessionFactory();
-            session = factory.openSession();
             transaction = session.beginTransaction();
 
             String hql = "FROM student";
@@ -41,7 +40,6 @@ public class StudentService implements StudentI{
             }
             e.printStackTrace();
         }finally {
-            factory.close();
             session.close();
         }
         return null;
@@ -49,9 +47,9 @@ public class StudentService implements StudentI{
 
     @Override
     public void createStudent(Student student){
+        Session session = factory.openSession();
+        Transaction transaction =null;
         try{
-            factory = new Configuration().configure().buildSessionFactory();
-            session = factory.openSession();
             transaction = session.beginTransaction();
 
             session.persist(student);
@@ -62,15 +60,14 @@ public class StudentService implements StudentI{
             }
             e.printStackTrace();
         }finally {
-            factory.close();
             session.close();
         }
     }
     @Override
     public Student getStudentByEmail(String email){
+        Session session = factory.openSession();
+        Transaction transaction =null;
         try {
-            factory = new Configuration().configure().buildSessionFactory();
-            session = factory.openSession();
             transaction = session.beginTransaction();
             Student student = session.get(Student.class, email);
             transaction.commit();
@@ -81,7 +78,6 @@ public class StudentService implements StudentI{
             }
             e.printStackTrace();
         }finally {
-            factory.close();
             session.close();
         }
         return null;
@@ -90,9 +86,9 @@ public class StudentService implements StudentI{
 
     @Override
     public boolean validateStudent(String email, String password){
+        Session session = factory.openSession();
+        Transaction transaction =null;
         try{
-            factory = new Configuration().configure().buildSessionFactory();
-            session = factory.openSession();
             transaction = session.beginTransaction();
 
             String hql = "FROM student s WHERE s.email = :email AND s" + "s.password = :password";
@@ -116,9 +112,9 @@ public class StudentService implements StudentI{
 
     @Override
     public void registerStudentToCourse(String email, int courseId){
+        Session session = factory.openSession();
+        Transaction transaction = null;
         try{
-            factory = new Configuration().configure().buildSessionFactory();
-            session = factory.openSession();
             transaction = session.beginTransaction();
 
             Student student = getStudentByEmail(email);
@@ -133,7 +129,6 @@ public class StudentService implements StudentI{
             e.printStackTrace();
         }
         finally {
-            factory.close();
             session.close();
 
         }

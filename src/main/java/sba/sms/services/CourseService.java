@@ -14,14 +14,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CourseService implements CourseI{
-    SessionFactory factory = null;
-    Session session = null;
-    Transaction transaction = null;
+    SessionFactory factory = new Configuration().configure().buildSessionFactory();
 
     @Override
     public void createCourse(Course course){
-        try {factory = new Configuration().configure().buildSessionFactory();
-            session = factory.openSession();
+        Session session = factory.openSession();
+        Transaction transaction =null;
+        try {
             transaction = session.beginTransaction();
             session.persist(course);
             transaction.commit();
@@ -31,17 +30,16 @@ public class CourseService implements CourseI{
             }
             e.printStackTrace();
         }finally {
-            factory.close();
             session.close();
         }
     }
     @Override
     public Course getCourseById(int courseId){
         Course course = null;
+        Session session = factory.openSession();
+        Transaction transaction =null;
 
         try {
-            factory = new Configuration().configure().buildSessionFactory();
-            session = factory.openSession();
             transaction = session.beginTransaction();
             course = session.get(Course.class, (courseId));
             transaction.commit();
@@ -52,16 +50,15 @@ public class CourseService implements CourseI{
             }
             e.printStackTrace();
         }finally {
-            factory.close();
             session.close();
         }
         return course;
     }
     @Override
     public List<Course> getAllCourses(){
-
-        try {factory = new Configuration().configure().buildSessionFactory();
-            session = factory.openSession();
+        Session session = factory.openSession();
+        Transaction transaction =null;
+        try {
             transaction = session.beginTransaction();
             String hql = "FROM course";
             TypedQuery<Course> query = session.createNamedQuery(hql, Course.class);
@@ -74,7 +71,6 @@ public class CourseService implements CourseI{
             }
             e.printStackTrace();
         }finally {
-            factory.close();
             session.close();
         }
         return null;
