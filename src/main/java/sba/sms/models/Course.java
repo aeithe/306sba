@@ -4,12 +4,15 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 @Entity
 @Table (name = "course")
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Course {
     @Getter
     @Id
@@ -26,16 +29,25 @@ public class Course {
     private String instructor;
 
     @Column(name = "students")
-    private Set<Student> students;
+    @ManyToMany(mappedBy = "courses", fetch = FetchType.EAGER, cascade = {CascadeType.DETACH, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE})
+    private Set<Student> students = new HashSet<>();
 
 
-    @ManyToMany(mappedBy = "course")
-    public Set<Student> getStudents() {
-        return students;
-    }
-
-    public Course(String instructor, String name) {
+    public Course(String name, String instructor) {
         this.instructor = instructor;
         this.name = name;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Course course = (Course) o;
+        return id == course.id && Objects.equals(name, course.name) && Objects.equals(instructor, course.instructor);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, instructor);
     }
 }

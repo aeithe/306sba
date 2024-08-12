@@ -18,6 +18,7 @@ import java.util.List;
 
 
 public class StudentService implements StudentI{
+    CourseService service = new CourseService();
     SessionFactory factory =  new Configuration().configure().buildSessionFactory();;
 
 
@@ -25,14 +26,15 @@ public class StudentService implements StudentI{
     public List<Student> getAllStudents(){
         Session session = factory.openSession();
         Transaction transaction =null;
+        List<Student> students = new ArrayList<>();
         try {
             transaction = session.beginTransaction();
 
-            String hql = "FROM student";
-            TypedQuery<Student> query = session.createNamedQuery(hql, Student.class);
-            List<Student> students = query.getResultList();
+            Query<Student> query = session.createQuery("FROM Student", Student.class);
+
+            students = query.getResultList();
+
             transaction.commit();
-            return students;
         }
         catch (Exception e){
             if (transaction !=null){
@@ -42,7 +44,7 @@ public class StudentService implements StudentI{
         }finally {
             session.close();
         }
-        return null;
+        return students;
     }
 
     @Override
@@ -67,11 +69,16 @@ public class StudentService implements StudentI{
     public Student getStudentByEmail(String email){
         Session session = factory.openSession();
         Transaction transaction =null;
+        Student student = new Student();
         try {
             transaction = session.beginTransaction();
-            Student student = session.get(Student.class, email);
+
+            Query<Student> query = session.createQuery("FROM Student WHERE email = :email", Student.class);
+            query.setParameter("email", email);
+
+            student = query.getSingleResult();
+
             transaction.commit();
-            return student;
         }catch (Exception e){
             if (transaction !=null){
                 transaction.rollback();
@@ -80,33 +87,17 @@ public class StudentService implements StudentI{
         }finally {
             session.close();
         }
-        return null;
+        return student;
 
     }
 
     @Override
     public boolean validateStudent(String email, String password){
-        Session session = factory.openSession();
-        Transaction transaction =null;
-        try{
-            transaction = session.beginTransaction();
-
-            String hql = "FROM student s WHERE s.email = :email AND s" + "s.password = :password";
-            TypedQuery<Student> query = session.createQuery(hql, Student.class);
-            query.setParameter("email", email);
-            query.setParameter("password", password);
-            Student student = query.getSingleResult();
-
-            transaction.commit();
-            return student != null;
-        }catch (Exception e){
-            if(transaction != null){
-                transaction.rollback();
-            }
-            e.printStackTrace();
-        }finally {
-            factory.close();
+        Student student = getStudentByEmail(email);
+        if(student != null && student.getEmail().equals(email)){
+            return true;
         }
+
         return false;
     }
 
@@ -118,9 +109,10 @@ public class StudentService implements StudentI{
             transaction = session.beginTransaction();
 
             Student student = getStudentByEmail(email);
-            CourseService service = new CourseService();
+
             Course course = service.getCourseById(courseId);
 
+            student.getCourses().addAll(getStudentCourses((email)));
             student.getCourses().add(course);
             session.merge(student);
             transaction.commit();
@@ -134,15 +126,27 @@ public class StudentService implements StudentI{
         }
     }
     @Override
-    public List<Course> getStudentCourses(String email){
-        try{
-            Student student = getStudentByEmail(email);
-            List<Course> course = new ArrayList<>();
-            course.addAll(student.getCourses());
-            return course;
-        }catch (Exception e){
+    public List<Course> getStudentCourses(String email) {
+        Session session = factory.openSession();
+        Transaction transaction = null;
+        List<Course> courses = new ArrayList<>();
+
+        try {
+            transaction = session.beginTransaction();
+
+            String hqlString = "SELECT course FROM Course course JOIN course.students student WHERE student.email = :email";
+            Query<Course> query = session.createQuery(hqlString, Course.class);
+            query.setParameter("email", email);
+
+            courses = query.getResultList();
+
+            transaction.commit();
+        } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            session.close();
         }
-        return null;
+
+        return courses;
     }
 }

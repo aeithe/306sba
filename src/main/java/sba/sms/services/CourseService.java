@@ -41,7 +41,12 @@ public class CourseService implements CourseI{
 
         try {
             transaction = session.beginTransaction();
-            course = session.get(Course.class, (courseId));
+
+            Query<Course> query = session.createQuery("From Course WHERE id=:id", Course.class);
+            query.setParameter("id", courseId);
+
+            course = query.getSingleResult();
+
             transaction.commit();
 
         }catch (Exception e){
@@ -58,13 +63,13 @@ public class CourseService implements CourseI{
     public List<Course> getAllCourses(){
         Session session = factory.openSession();
         Transaction transaction =null;
+        List<Course> courses = new ArrayList<>();
         try {
             transaction = session.beginTransaction();
-            String hql = "FROM course";
-            TypedQuery<Course> query = session.createNamedQuery(hql, Course.class);
-            List<Course> courses = query.getResultList();
+            String hql = "FROM Course";
+            Query<Course> query = session.createQuery(hql, Course.class);
+            courses = query.getResultList();
             transaction.commit();
-            return courses;
         }catch (Exception e){
             if(transaction != null){
                 transaction.rollback();
@@ -73,7 +78,7 @@ public class CourseService implements CourseI{
         }finally {
             session.close();
         }
-        return null;
+        return courses;
     }
 
 }
